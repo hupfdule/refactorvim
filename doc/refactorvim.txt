@@ -1,0 +1,129 @@
+*refactorvim.txt*  Refactoring vimscript plugins
+
+Version:        0.1.0
+Release Date:   2019-11-10
+
+===============================================================================
+Contents ~
+
+    1. Introduction ............................. |introduction|
+    2. Commands ................................. |commands|
+    3. Mappings ................................. |mappings|
+    4. Complementary Plugins .................... |complementary-plugins|
+    5. Changelog ................................ |changelog|
+    6. License .................................. |license|
+
+===============================================================================
+INTRODUCTION                                                     *introduction*
+
+Refactorvim is a small Vim plugin for refactoring vimscript plugins.
+
+It provides an ftplugin for 'vim' files and therefore is only active when the
+current buffer has filetype 'vim'.
+
+Currently it only provides functionality to rename and move autoload functions.
+
+Refactorvim is designed to refactor the codebase of a single Vim plugin.
+Therefore it operates in the whole plugin directory of the currently edited
+file.
+
+===============================================================================
+COMMANDS                                                             *commands*
+
+Refactorvim provides the following commands:
+
+-------------------------------------------------------------------------------
+                                                     *:RefactorvimMoveFunction*
+:RefactorvimMoveFunction {function} {new-namespace}
+
+    Move a function into a different autoload file without changing its
+    function name. This adjusts the namespace part of the function.
+
+    For example when moving function 'foo#bar#frobnitz' to 'baz#qux' the
+    resulting function name will be 'baz#qux#frobnitz'.
+
+    This command takes two parameters.
+
+        1. {function} The full function name (including namespace) to move.
+
+        2. {new-namspace} The namespace to move the function into.
+
+-------------------------------------------------------------------------------
+                                                  *:RefactorvimRenameFunction*
+:RefactorvimRenameFunction {function} {new-name}
+
+    Rename a function without moving it to another autoload file. This only
+    adjusts the function name itself, but leaves the namespace intact.
+
+    For example when renaming function 'foo#bar#frobnitz' to 'gizmo' the
+    resulting function name will be 'foo#bar#gizmo'.
+
+    This command takes two parameters.
+
+        1. {function} The full function name (including namespace) to move.
+
+        2. {new-name} The new function name _without namespace_.
+
+Both commands support completion for their parameters.
+
+Additionally a commandline mode mapping is defined to fill in the current
+autoload function.
+
+===============================================================================
+MAPPINGS                                                             *mappings*
+
+Refactorivm provides the following mapping:
+
+|mapmode-c|                          *<Plug>(RefactorvimCurrentAutoloadFunction)*
+<Plug>(RefactorvimCurrentAutoloadFunction) 
+
+    A commanline mode mapping for detecting the autoload function to operate
+    on.
+
+    If the cursor is currently on the name of an autoload function, that name
+    is returned.
+
+    If the cursor is somewhere inside an autoload function in a comment
+    directly preceding an autoload function (without any blank lines between)
+    the name of that function is returned.
+
+    Otherwise nothing is returned.
+
+    By default this mapping is mapped to '<C-R><C-N>'
+
+    To map it to a different key, use something like:
+>
+        cmap {newmapping} <Plug>(RefactorvimCurrentAutoloadFunction)
+<
+
+===============================================================================
+COMPLEMENTARY PLUGINS                                   *complementary-plugins*
+
+machakann/vim-Verdin
+
+    Provides an omni completion function for Vim script.
+
+    https://github.com/machakann/vim-Verdin
+
+tpope/vim-scriptease
+
+    Provides handy commands for writing Vim plugins.
+
+    https://github.com/tpope/vim-scriptease
+
+===============================================================================
+CHANGELOG                                                           *changelog*
+
+    0.1.0 .................................................... 2019-11-10
+
+        - Initial release
+
+===============================================================================
+LICENSE                                                               *license*
+
+This plugin is licensed under the terms of the MIT License.
+
+http://opensource.org/licenses/MIT
+
+===============================================================================
+vim: set ft=help tw=78 sw=4 :

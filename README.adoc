@@ -1,0 +1,97 @@
+Refactorvim
+===========
+Marco Herrn <marco@mherrn.de>
+2019-11-10
+:notoc:
+:homepage: https://github.com/hupfdule/refactorvim
+:license-link: https://github.com/hupfdule/refactorvim/blob/master/LICENSE.txt
+:source-highlighter: prettify
+:refactorvim-version: 0.1.0
+
+
+Refactorvim is a small Vim plugin for refactoring vimscript plugins.
+
+It provides an ftplugin for `vim` files and therefore is only active when
+the current buffer has filetype `vim`.
+
+Currently it only provides functionality to rename and move autoload
+functions.
+
+Refactorvim is designed to refactor the codebase of a single Vim plugin.
+Therefore it operates in the whole plugin directory of the currently edited
+file.
+
+Commands
+--------
+
+Refactorvim provides the following commands:
+
+RefactorvimMoveFunction::
+Move a function into a different autoload file without changing its
+function name. This adjusts the namespace part of the function.
++
+For example when moving function `foo#bar#frobnitz` to `baz#qux` the
+resulting function name will be `baz#qux#frobnitz`.
++
+This command takes two parameters.
++
+1. The full function name (including namespace) to move.
+2. The namespace to move the function into.
+
+RefactorvimRenameFunction::
+Rename a function without moving it to another autoload file. This only
+adjusts the function name itself, but leaves the namespace intact.
++
+For example when renaming function `foo#bar#frobnitz` to `gizmo` the
+resulting function name will be `foo#bar#gizmo`.
++
+This command takes two parameters.
++
+1. The full function name (including namespace) to move.
+2. The new function name _without namespace_.
+
+Both commands support completion for their parameters.
+
+Additionally a <<detect-autoload-function, commandline mode mapping>> is
+defined to fill in the current autoload function.
+
+
+Mappings
+--------
+
+Refactorivm provides the following mapping:
+
+[[detect-autoload-function]]
+<Plug>(RefactorvimCurrentAutoloadFunction)::
+A commanline mode mapping for detecting the autoload function to operate
+on.
++
+If the cursor is currently on the name of an autoload function, that name
+is returned.
++
+If the cursor is somewhere inside an autoload function in a comment
+directly preceding an autoload function (without any blank lines between)
+the name of that function is returned.
++
+Otherwise nothing is returned.
++
+By default this mapping is mapped to `<C-R><C-N>`
++
+Use `cmap {newmapping} <Plug>(RefactorvimCurrentAutoloadFunction)` to map
+it to a different key.
+
+
+Complementary Plugins
+---------------------
+
+https://github.com/machakann/vim-Verdin[machakann/vim-Verdin]::
+  Provides an omni completion function for Vim script.
+https://github.com/tpope/vim-scriptease[tpope/vim-scriptease]::
+  Provides handy commands for writing Vim plugins.
+
+
+License
+-------
+
+This plugin is licensed under the terms of the
+http://opensource.org/licenses/MIT[MIT License].
