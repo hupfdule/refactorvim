@@ -1,0 +1,19 @@
+Contributing to Refactorvim
+===========================
+:issue-tracker: https://github.com/hupfdule/refactorvim/issues
+
+Refactorvim is only a small plugin made because of a personal need.
+It is not well tested and will likely still have some bugs.
+
+There is also enough room for improvements.
+
+Anyone interested in contributing is highly welcome! This plugin should be
+community driven.
+
+If you think something is missing, found a bug or want to discuss further
+development, please open a <<{issue-tracker}, ticket>>. And of course, be
+prepared to provide Pull Requests.
+
+If there is enough interest in this plugin it will likely be moved into its
+own organization in github to not connect it too much with a personal
+account.
