@@ -41,32 +41,36 @@ Refactorvim provides the following command:
 
     This can be used to rename a function without changing its namespace.
 
-        For example when moving function 'foo#bar#frobnitz' to 'foo#bar#qux'~
-        the resulting function name will be 'foo#bar#qux'.                  ~
+        For example when moving function 'foo#bar#frobnitz()' to            ~
+        'foo#bar#qux()' the resulting function name will be                 ~
+        'foo#bar#qux()'.                                                    ~
 
     It can also be used to rename a function including its namespace. This
     involves moving the function declaration to the autoload file
     corresponding to the new namespace.
 
-        For example when moving function 'foo#bar#frobnitz' to 'baz#qux' the~
-        resulting function name will be 'baz#qux#frobnitz'.                 ~
+        For example when moving function 'foo#bar#frobnitz()' to the        ~
+        namespace 'baz#qux#' the resulting function name will be            ~
+        'baz#qux#frobnitz()'.                                               ~
 
     It can also be used to rename a whole autoload namespace. This involves
     moving the file corresponding to the original namepace to the file
     corresponding to the new namespace.
 
-        For example when moving namespace 'foo#bar#' to 'baz#qux' the       ~
-        new function name of 'foo#bar#frobnitz' will be 'baz#qux#frobnitz'. ~
+        For example when moving namespace 'foo#bar#' to 'baz#qux#' the      ~
+        new function name of 'foo#bar#frobnitz()' will be                   ~
+        'baz#qux#frobnitz()'.                                               ~
 
-    In all cases references to the affected functions are update in the whole
-    project.
+    In all cases references to the affected functions are updated in the
+    whole project.
 
-    This command has some internal logic decide whether the given arguments
-    are a function or a namespace. This is done in the following order:
+    This command has some internal logic to decide whether the given
+    arguments are a function or a namespace. This is done in the following
+    order:
 
         - if the given name ends with '()' it is considered a function
 
-        - if the given name ends with '#' it is considere a namespace
+        - if the given name ends with '#' it is considered a namespace
 
         - if a function with the given name exists it is considered a function
 
@@ -100,13 +104,13 @@ Refactorvim provides the following mapping:
 |mapmode-c|                          *<Plug>(RefactorvimCurrentAutoloadFunction)*
 <Plug>(RefactorvimCurrentAutoloadFunction) 
 
-    A commanline mode mapping for detecting the autoload function to operate
-    on.
+    A commandline mode mapping for detecting the autoload function to
+    operate on.
 
     If the cursor is currently on the name of an autoload function, that name
     is returned.
 
-    If the cursor is somewhere inside an autoload function in a comment
+    If the cursor is somewhere inside an autoload function or in a comment
     directly preceding an autoload function (without any blank lines between)
     the name of that function is returned.
 
@@ -132,7 +136,7 @@ refactorvim#renaming#get_autoload_functions()
 
     The names don't include the trailing '()' characters.
 
-    This function is used interally to provide completion of command arguments
+    This function is used internally to provide completion of command arguments
     to |:RefactorvimRename|.    
 
                                *refactorvim#renaming#get_autoload_namespaces()*
@@ -143,7 +147,7 @@ refactorvim#renaming#get_autoload_namespaces()
 
     The names don't include the trailing '#' character.
 
-    This function is used interally to provide completion of command arguments
+    This function is used internally to provide completion of command arguments
     to |:RefactorvimRename|.
 
                          *refactorvim#renaming#get_current_autoload_function()*
@@ -183,7 +187,7 @@ tpope/vim-scriptease
 
 WolfgangMehner/vim-support
 
-    Provides snippets, template and mappings for writing Vim plugins.
+    Provides snippets, templates and mappings for writing Vim plugins.
 
     https://github.com/WolfgangMehner/vim-support
 
