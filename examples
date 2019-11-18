@@ -1,0 +1,44 @@
+# Rename function inside namespace (explicit)
+
+ :RefactorvimRename refactorvim#renaming#rename_function() new_function()
+
+# Rename function with namespace (explicit)
+
+ :RefactorvimRename refactorvim#renaming#rename_function() refactorvim#autoload#new_function()
+
+# Rename namespace (explicit)
+
+ :RefactorvimRename refactorvim#renaming# refactorvim#autoload#
+
+# Rename function inside namespace (guess)
+
+ :RefactorvimRename refactorvim#renaming#rename_function new_function
+
+# Rename function with namespace (guess)
+
+ :RefactorvimRename refactorvim#renaming#rename_function refactorvim#autoload#new_function
+
+
+Guessing strategy
+-----------------
+
+- if ends in () it is a function
+- if ends in # it is a namespace
+- if _not_ contains # it is a function name
+- if exists as namespace it is a namespace
+- otherwise it is a function name
+
+
+Namespace renaming
+------------------
+
+my#namespace# → some#other#foo
+
+./my/namespace.vim → ./some/other/foo.vim
+./my/namespace/   → ./some/other/foo
+./my/namespace/one/lvl2.vim  → /some/other/foo/one/lvl2.vim
+
+my#namespace# → my#namespace#sub1#sub2
+
+./my/namespace.vim → ./my/namespace/sub1/sub2.vim
+./my/namespace/    → ./my/namespace/sub1/sub2

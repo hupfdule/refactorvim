@@ -7,6 +7,7 @@ Marco Herrn <marco@mherrn.de>
 :license-link: https://github.com/hupfdule/refactorvim/blob/master/LICENSE.txt
 :source-highlighter: prettify
 :refactorvim-version: 0.1.0
+:experimental:
 
 
 Refactorvim is a small Vim plugin for refactoring vimscript plugins.
@@ -21,39 +22,69 @@ Refactorvim is designed to refactor the codebase of a single Vim plugin.
 Therefore it operates in the whole plugin directory of the currently edited
 file.
 
+
 Commands
 --------
 
-Refactorvim provides the following commands:
+Refactorvim provides the following command:
 
-RefactorvimMoveFunction::
-Move a function into a different autoload file without changing its
-function name. This adjusts the namespace part of the function.
+[[:RefactorvimRename]]
+RefactorvimRename::
+Rename an autoload function or an autoload namespace.
 +
+This can be used to rename a function without changing its namespace.
++
+===========================================================================
+For example when moving function `foo#bar#frobnitz` to `foo#bar#qux`
+the resulting function name will be `foo#bar#qux`.
+===========================================================================
++
+It can also be used to rename a function including its namespace. This
+involves moving the function declaration to the autoload file
+corresponding to the new namespace.
++
+===========================================================================
 For example when moving function `foo#bar#frobnitz` to `baz#qux` the
 resulting function name will be `baz#qux#frobnitz`.
+===========================================================================
++
+It can also be used to rename a whole autoload namespace. This involves
+moving the file corresponding to the original namepace to the file
+corresponding to the new namespace.
++
+===========================================================================
+For example when moving namespace `foo#bar#` to `baz#qux` the
+new function name of `foo#bar#frobnitz` will be `baz#qux#frobnitz`.
+===========================================================================
++
+In all cases references to the affected functions are update in the whole
+project.
++
+This command has some internal logic decide whether the given arguments
+are a function or a namespace. This is done in the following order:
++
+    - if the given name ends with `()` it is considered a function
+    - if the given name ends with `#` it is considere a namespace
+    - if a function with the given name exists it is considered a function
+    - if an autoload vim script with the path corresponding to the given
+      name exists it is considered a namespace
+    - otherwise the meaning is unclear and an error will be displayed
++
+To make the meaning clear always provide the `()` or `#` suffix.
 +
 This command takes two parameters.
 +
-1. The full function name (including namespace) to move.
-2. The namespace to move the function into.
-
-RefactorvimRenameFunction::
-Rename a function without moving it to another autoload file. This only
-adjusts the function name itself, but leaves the namespace intact.
+    1. `{source}` The function or namespace to rename.
+    2. `{target}` The new name of the function or namespace.
 +
-For example when renaming function `foo#bar#frobnitz` to `gizmo` the
-resulting function name will be `foo#bar#gizmo`.
+The command supports completion for both parameters via kbd:[Tab] key.
 +
-This command takes two parameters.
-+
-1. The full function name (including namespace) to move.
-2. The new function name _without namespace_.
-
-Both commands support completion for their parameters.
-
 Additionally a <<detect-autoload-function, commandline mode mapping>> is
 defined to fill in the current autoload function.
+
+Be aware that this does not check for referenced script-local variables and
+functions. Therefore after such a refactoring it may be possible that the
+code isn't directly runnable without further adaptations.
 
 
 Mappings
@@ -81,6 +112,47 @@ Use `cmap {newmapping} <Plug>(RefactorvimCurrentAutoloadFunction)` to map
 it to a different key.
 
 
+Functions
+---------
+
+Refactorvim provides the following functions:
+
+refactorvim#renaming#get_autoload_functions()::
+Returns the names of all autoload functions in the current project as a
+list.
++
+The names don`t include the trailing `()` characters.
++
+This function is used interally to provide completion of command arguments
+to <<:RefactorvimRename, RefactorvimRename>>.
+
+refactorvim#renaming#get_autoload_namespaces()::
+Returns the names of all autoload namespaces in the current project as a
+list.
++
+The names don`t include the trailing `#` character.
++
+This function is used interally to provide completion of command arguments
+to <<:RefactorvimRename, RefactorvimRename>>.
+
+refactorvim#renaming#get_current_autoload_function()::
+Returns the name of the autoload function the cursor is currently in.
++
+See <<detect-autoload-function,
+<Plug>(RefactorvimCurrentAutoloadFunction)>> for a detailled description
+and the default mapping that is assigned to that function.
+
+refactorvim#renaming#rename(`{source}`, `{target}`)::
+Renames an autoload function or namespace including necessary renaming and
+copying of files due to changed namespaces.
++
+This function is by default provided via the <<:RefactorvimRename, RefactorvimRename>>
+command.
++
+See <<:RefactorvimRename, RefactorvimRename>> for a detailled description of the provided
+functionality.
+
+
 Complementary Plugins
 ---------------------
 
@@ -88,6 +160,8 @@ https://github.com/machakann/vim-Verdin[machakann/vim-Verdin]::
   Provides an omni completion function for Vim script.
 https://github.com/tpope/vim-scriptease[tpope/vim-scriptease]::
   Provides handy commands for writing Vim plugins.
+https://github.com/WolfgangMehner/vim-support[WolfgangMehner/vim-support]::
+  Provides snippets, template and mappings for writing Vim plugins.
 
 
 License

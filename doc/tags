@@ -1,10 +1,11 @@
-:RefactorvimMoveFunction	refactorvim.txt	/*:RefactorvimMoveFunction*
-:RefactorvimRenameFunction	refactorvim.txt	/*:RefactorvimRenameFunction*
+:RefactorvimRename	refactorvim.txt	/*:RefactorvimRename*
 <Plug>(RefactorvimCurrentAutoloadFunction)	refactorvim.txt	/*<Plug>(RefactorvimCurrentAutoloadFunction)*
 changelog	refactorvim.txt	/*changelog*
 commands	refactorvim.txt	/*commands*
 complementary-plugins	refactorvim.txt	/*complementary-plugins*
+functions	refactorvim.txt	/*functions*
 introduction	refactorvim.txt	/*introduction*
 license	refactorvim.txt	/*license*
 mappings	refactorvim.txt	/*mappings*
+refactorvim#renaming#get_autoload_functions	refactorvim.txt	/*refactorvim#renaming#get_autoload_functions*
 refactorvim.txt	refactorvim.txt	/*refactorvim.txt*

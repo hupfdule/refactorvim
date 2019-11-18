@@ -1,0 +1,6 @@
+- What to do if script-local variables and methods are used in a moved
+  function?
+  - Move together? What should happen if these are referenced somewhere
+    else?
+  - Stop moving the function?
+  - Specify [!] to move / copy all script-local references?
