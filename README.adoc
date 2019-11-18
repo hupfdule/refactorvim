@@ -167,5 +167,5 @@ https://github.com/WolfgangMehner/vim-support[WolfgangMehner/vim-support]::
 License
 -------
 
-This plugin is licensed under the terms of the
-http://opensource.org/licenses/MIT[MIT License].
+This plugin is licensed under the terms of the link:{license-link}[MIT
+License].
