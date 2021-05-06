@@ -26,4 +26,3 @@ cnoremap <Plug>(RefactorvimCurrentAutoloadFunction)   <c-r>=refactorvim#renaming
 cmap <C-R><C-N> <Plug>(RefactorvimCurrentAutoloadFunction)
 
 let &cpo = s:save_cpo
-

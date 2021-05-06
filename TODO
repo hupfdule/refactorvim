@@ -4,3 +4,9 @@
     else?
   - Stop moving the function?
   - Specify [!] to move / copy all script-local references?
+
+- Support refactoring of autoload variables (global, but autoloaded)
+
+- Renaming of autoload file asciidoc#search to asciidoc#sections did rename
+  the file, but the content was not modified. All previous function names
+  are still there.
