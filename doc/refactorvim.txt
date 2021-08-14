@@ -35,7 +35,7 @@ Refactorvim provides the following command:
 
 -------------------------------------------------------------------------------
                                                            *:RefactorvimRename*
-:RefactorvimMoveFunction {source} {target}
+:RefactorvimRename {source} {target}
 
     Rename an autoload function or an autoload namespace.
 
