@@ -30,12 +30,13 @@ function! refactorvim#renaming#get_autoload_functions() abort
 
   " Reset the quickfix list to the previous one
   " FIXME: Doesn't work if there is no previous one
-  "silent colder
+  if s:qflist_size() > 0
+    silent colder
+  endif
 
   lcd -
   return l:resultlist
 endfunction
-
 
 
 ""
@@ -474,4 +475,224 @@ function! s:find_root_directory() abort
   else
     return l:root
   endif
+endfunction
+
+
+""
+" Toggle the visibility (scope) of a function between script-local and autoloaded (global).
+"
+" If the given {function_name} is neither script-local (starting with "s:")
+" nor an autoload name (parts separated by "#") this function does nothing,
+" but displays an error.
+"
+" Despite the name, {function_name} may also be a variable name.
+"
+" When converting an autoload function into a script-local function it may
+" be possible that references to the original function exist that would not
+" work anymore after changing to script-local. In such a case the user is
+" offered the choice to
+"   - rename only in the current buffer
+"   - rename all occurences (in all files)
+"   - abort and don't change anything
+"
+" @param {function_name} the function name to toggle
+function! refactorvim#renaming#toggle_visibility(function_name) abort
+  if a:function_name[0:1] ==# 's:'
+    " script-local functions are changed to autoload functions
+    call s:set_visibility_autoload(a:function_name)
+  elseif a:function_name =~# '#'
+    " autoload functions are changed to script-local functions
+    " but first check if they are referenecd elsewhere
+    let l:referencing_bufnrs = s:get_references_in_other_files(a:function_name)
+    if !empty(l:referencing_bufnrs)
+      " if there are other files, ask the user what to do
+      let l:choice = inputlist([a:function_name . ' is referenced in other files. See buffers ' . string(l:referencing_bufnrs) . "\nWhat do you want to do?"
+            \ , '  1 Change only in current file'
+            \ , '  2 Change in all files'
+            \ , '  3 Abort renaming'])
+      echo "\n"
+      if l:choice is 1
+        " only change in current file
+        call s:set_visibility_script_local(a:function_name)
+      elseif choice is 2
+        call s:set_visibility_script_local_in_all(a:function_name, l:referencing_bufnrs)
+      else
+        " abort. Don't change anything.
+        return
+      endif
+    else
+      " if the function is only referenced in the current file, rename it directly
+      call s:set_visibility_script_local(a:function_name)
+    endif
+  else
+    echohl ErrorMsg | echom a:function_name . ' is neither script-local nor autoloaded.' | echohl Normal
+    return
+  endif
+endfunction
+
+
+""
+" Switch a script-local function into an autoload function.
+"
+" If the given {function_name} is not a script-local function, this
+" function does nothing.
+"
+" Despite the name, {function_name} may also be a variable name.
+"
+" @param {function_name} the function name to change
+function! s:set_visibility_autoload(function_name) abort
+  let l:bare_function_name = split(a:function_name, '#')[-1]
+  let l:bare_function_name = substitute(l:bare_function_name, '^s:', '', '')
+
+  let l:autoload_prefix = s:get_autoload_prefix()
+  if l:autoload_prefix is 0
+    " don't do anything if the autoload prefix could not be determined
+    return
+  endif
+
+  let l:autoload_function_name = l:autoload_prefix . l:bare_function_name
+  let l:orig_pos = getcurpos()
+  execute '%s/' . a:function_name . '/' . l:autoload_function_name . '/g'
+  call setpos('.', l:orig_pos)
+endfunction
+
+
+""
+" Switch an autoload function into a script-local function.
+"
+" If the given {function_name} is not an autoload function, this
+" function does nothing.
+"
+" This function only changes the occurrences of {function_name} in the current buffer.
+" It does not check for occurrences in other files nor does it try to
+" change them. To change occurrences in other files, @link
+" {s:set_visibility_script_local_in_all} must be used.
+"
+" Despite the name, {function_name} may also be a variable name.
+"
+" @param {function_name} the function name to change
+function! s:set_visibility_script_local(function_name) abort
+  let l:bare_function_name = split(a:function_name, '#')[-1]
+  let l:bare_function_name = substitute(l:bare_function_name, '^s:', '', '')
+
+  let l:script_local_function_name = 's:' . l:bare_function_name
+  let l:orig_pos = getcurpos()
+  execute '%s/' . a:function_name . '/' . l:script_local_function_name . '/g'
+  call setpos('.', l:orig_pos)
+endfunction
+
+
+""
+" Switch an autoload function into a script-local function.
+"
+" If the given {function_name} is not an autoload function, this
+" function does nothing.
+"
+" This function changes the occurrences of {function_name} in all buffers
+" that are specified in {additional_bufnrs} and additionally in the current
+" buffer.
+"
+" Despite the name, {function_name} may also be a variable name.
+"
+" @param {function_name} the function name to change
+" @param {additional_bufnrs} the bufnr of the buffers to change (additionally
+"                            to the current buffer)
+function! s:set_visibility_script_local_in_all(function_name, additional_bufnrs) abort
+  let l:bare_function_name = split(a:function_name, '#')[-1]
+  let l:bare_function_name = substitute(l:bare_function_name, '^s:', '', '')
+
+  let l:script_local_function_name = 's:' . l:bare_function_name
+  let l:bufnrs_to_change = add(copy(a:bufnrs), bufnr())
+  for bufnr in l:bufnrs_to_change
+    execute bufnr . "buffer"
+    let l:orig_pos = getcurpos()
+    execute '%s/' . a:function_name . '/' . l:script_local_function_name . '/g'
+    call setpos('.', l:orig_pos)
+  endfor
+endfunction
+
+
+""
+" Get the autoload prefix of the current buffer.
+"
+" For example the autoload prefix for the file
+" "autoload/foo/bar/frobnitz.vim" would be "foo#bar#frobnitz".
+"
+" If the current buffer is not an autoload script, 0 is returned instead.
+function! s:get_autoload_prefix() abort
+  let l:absolute_script_path = expand('%:p')
+  let l:absolute_script_dir_path = expand('%:p:h')
+  let l:cwd = getcwd()
+  execute 'lcd ' . l:absolute_script_dir_path
+  let l:autoload_dir = finddir('autoload', ';')
+  execute 'lcd ' . l:cwd
+
+  if s:starts_with(l:absolute_script_path, l:autoload_dir) && l:absolute_script_path =~# '\.vim$'
+    let l:autoload_script_path = l:absolute_script_path[len(l:autoload_dir) + 1:]
+    return substitute(l:autoload_script_path[:-len('.vim')-1], '/', '#', '') . '#'
+  else
+    " The current script is not an autoload script. Don't change anything.
+    return 0
+  endif
+endfunction
+
+
+""
+" Check whether the {shorter} string is contained in the {longer} one.
+"
+" @returns 1 if the {shorter} string is contained in the {longer} one,
+"          otherwise 0
+function! s:starts_with(longer, shorter) abort
+  return a:longer[0:len(a:shorter)-1] ==# a:shorter
+endfunction
+
+
+""
+" Get the files that reference the given {function_name}.
+"
+" This will load the corresponding files in an (unlisted) buffer, if
+" necessary.
+"
+" Despite the name, {function_name} may also be a variable name.
+"
+" The result will omit the current buffer. Therefore it only lists /other/
+" files that reference {function_name}.
+"
+" @param {function_name} the function_name to search for
+" @returns a list with the 'bufnr's of the files referencing the given
+"          {function_name}
+function! s:get_references_in_other_files(function_name) abort
+  execute ':lcd ' . s:find_root_directory()
+
+  let l:function_pattern = s:pattern_function_signature_line
+  execute ':silent vimgrep /\C' . a:function_name . '/j **/*'
+
+  " FIXME: Save current buffer here and restore it afterwards?
+  "        If cwindow is automatically called, we would land in it otherwise.
+  " FIXME: Store the content of the current quickfix list and restore it
+  " afterwards?
+  let l:resultlist = []
+  for e in getqflist()
+    if e['bufnr'] !=# bufnr() && index(l:resultlist, e['bufnr']) is -1
+      let l:resultlist = add(l:resultlist, e['bufnr'])
+    endif
+  endfor
+
+  " Reset the quickfix list to the previous one
+  if s:qflist_size() > 0
+    silent colder
+  endif
+
+  lcd -
+  return l:resultlist
+endfunction
+
+
+""
+" Get the number of quickfix lists.
+"
+" @returns the number of quickfix lists. May be 0 if there is no quickfix
+"          list.
+function! s:qflist_size() abort
+  return getqflist({'nr' : '$'}).nr
 endfunction

@@ -1,5 +1,8 @@
 :RefactorvimRename	refactorvim.txt	/*:RefactorvimRename*
+:RefactorvimToggleVisibility	refactorvim.txt	/*:RefactorvimToggleVisibility*
 <Plug>(RefactorvimCurrentAutoloadFunction)	refactorvim.txt	/*<Plug>(RefactorvimCurrentAutoloadFunction)*
+<Plug>(RefactorvimGotoDefinition)	refactorvim.txt	/*<Plug>(RefactorvimGotoDefinition)*
+<Plug>(RefactorvimToggleVisibility)	refactorvim.txt	/*<Plug>(RefactorvimToggleVisibility)*
 changelog	refactorvim.txt	/*changelog*
 commands	refactorvim.txt	/*commands*
 complementary-plugins	refactorvim.txt	/*complementary-plugins*
@@ -7,8 +10,10 @@ functions	refactorvim.txt	/*functions*
 introduction	refactorvim.txt	/*introduction*
 license	refactorvim.txt	/*license*
 mappings	refactorvim.txt	/*mappings*
+refactorvim#motions#goto_definition	refactorvim.txt	/*refactorvim#motions#goto_definition*
 refactorvim#renaming#get_autoload_functions()	refactorvim.txt	/*refactorvim#renaming#get_autoload_functions()*
 refactorvim#renaming#get_autoload_namespaces()	refactorvim.txt	/*refactorvim#renaming#get_autoload_namespaces()*
 refactorvim#renaming#get_current_autoload_function()	refactorvim.txt	/*refactorvim#renaming#get_current_autoload_function()*
 refactorvim#renaming#rename()	refactorvim.txt	/*refactorvim#renaming#rename()*
+refactorvim#renaming#toggle_visibility()	refactorvim.txt	/*refactorvim#renaming#toggle_visibility()*
 refactorvim.txt	refactorvim.txt	/*refactorvim.txt*

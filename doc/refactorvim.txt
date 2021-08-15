@@ -1,7 +1,7 @@
 *refactorvim.txt*  Refactoring vimscript plugins
 
-Version:        0.2.0
-Release Date:   2019-11-18
+Version:        0.3.0
+Release Date:   2021-08-21
 
 ===============================================================================
 Contents ~
@@ -22,7 +22,12 @@ Refactorvim is a small Vim plugin for refactoring vimscript plugins.
 It provides an ftplugin for 'vim' files and therefore is only active when the
 current buffer has filetype 'vim'.
 
-Currently it only provides functionality to rename and move autoload functions.
+With refactovim you can
+
+  - Rename and move autoload functions
+  - Toggle the visibility of functions and variables between autoload and
+    script-local
+  - Jump to the definition of a function or variable
 
 Refactorvim is designed to refactor the codebase of a single Vim plugin.
 Therefore it operates in the whole plugin directory of the currently edited
@@ -31,7 +36,7 @@ file.
 ===============================================================================
 COMMANDS                                                             *commands*
 
-Refactorvim provides the following command:
+Refactorvim provides the following commands:
 
 -------------------------------------------------------------------------------
                                                            *:RefactorvimRename*
@@ -96,13 +101,45 @@ Refactorvim provides the following command:
     and functions. Therefore after such a refactoring it may be possible that
     the code isn't directly runnable without further adaptations.
 
+
+-------------------------------------------------------------------------------
+                                                 *:RefactorvimToggleVisibility*
+:RefactorvimToggleVisibility
+
+    Toggle the visibility of a function or variable between autoload and
+    script-local.
+
+    This command operates on the `<cword>`. Therefore the cursor must reside on
+    the name of a function or variable.
+
+    If the function or variable starts with `s:` it is considered script-local
+    and will be switched to autoload by removing the `s:` prefix and instead
+    adding the autoload prefix for the current autoload script.
+
+    If the function or variable contains `#` characters it is considered an
+    autoload function or variable and will be switched to script-local by
+    removing the autoload prefix and adding `s:` instead.
+
+    As autoload functions and variables may already be referenced in other
+    scripts a check is done to verify whether they are already referenced
+    outside the script. If that is the case, the user gets the choice of
+    changing the visibility only in the current script (in which case the
+    existing references will be broken, as they refer to an autoload function
+    or variable that doesn't exist anymore) or changing the visibility in all
+    files (in which case the existing references will be broken, as the refer
+    to a script-local function or variable in a different script) or aborting
+    the operation (in which case no changes will be made).
+
+    Other scopes (like buffer-local, window-local, etc.) are not supported and
+    in such cases this command does nothing than displaying an error.
+
 ===============================================================================
 MAPPINGS                                                             *mappings*
 
-Refactorvim provides the following mapping:
+Refactorvim provides the following mappings:
 
 |mapmode-c|                          *<Plug>(RefactorvimCurrentAutoloadFunction)*
-<Plug>(RefactorvimCurrentAutoloadFunction) 
+<Plug>(RefactorvimCurrentAutoloadFunction)
 
     A commandline mode mapping for detecting the autoload function to
     operate on.
@@ -122,6 +159,44 @@ Refactorvim provides the following mapping:
 >
         cmap {newmapping} <Plug>(RefactorvimCurrentAutoloadFunction)
 <
+|mapmode-n|                                 *<Plug>(RefactorvimToggleVisibility)*
+<Plug>(RefactorvimToggleVisibility)
+
+    A normal mode mapping for toggling the visibility of the function or
+    variable at the current cursor position (the name of the function or
+    variable needs to be the `<cword>`).
+
+    By default this mapping is mapped to '<Leader>V'
+
+    To map it to a different key, use something like:
+>
+        nmap {newmapping} <Plug>(RefactorvimToggleVisibility)
+<
+|mapmode-n|                                   *<Plug>(RefactorvimGotoDefinition)*
+<Plug>(RefactorvimGotoDefinition)
+
+    A normal mode mapping for jumping to the definition of the function or
+    variable at the current cursor position.
+
+    In the case of (script-local or autoload) functions the cursor will be
+    moved the function signature.
+
+    In the case of function arguments (prefixed by `a:`) the cursor will be
+    moved to the corresponding argument in the function signature.
+
+    In the case of local variables (prefixed by `l:` or without any prefix) the
+    cursor will be moved to the first assignment to that variable.
+
+    In the case of autloat variables the exact definition is a bit unclear and
+    the cursor will be moved to the first assignment to that variable in the
+    autload script matching the variables autoload prefix.
+
+    By default this mapping is mapped to 'gd'
+
+    To map it to a different key, use something like:
+>
+        nmap {newmapping} <Plug>(RefactorvimGotoDefinition)
+<
 
 ===============================================================================
 FUNCTIONS                                                           *functions*
@@ -129,7 +204,7 @@ FUNCTIONS                                                           *functions*
 Refactorvim provides the following functions:
 
                                 *refactorvim#renaming#get_autoload_functions()*
-refactorvim#renaming#get_autoload_functions() 
+refactorvim#renaming#get_autoload_functions()
 
     Returns the names of all autoload functions in the current project as a
     list.
@@ -137,10 +212,10 @@ refactorvim#renaming#get_autoload_functions()
     The names don't include the trailing '()' characters.
 
     This function is used internally to provide completion of command arguments
-    to |:RefactorvimRename|.    
+    to |:RefactorvimRename|.
 
                                *refactorvim#renaming#get_autoload_namespaces()*
-refactorvim#renaming#get_autoload_namespaces() 
+refactorvim#renaming#get_autoload_namespaces()
 
     Returns the names of all autoload namespaces in the current project as a
     list.
@@ -151,7 +226,7 @@ refactorvim#renaming#get_autoload_namespaces()
     to |:RefactorvimRename|.
 
                          *refactorvim#renaming#get_current_autoload_function()*
-refactorvim#renaming#get_current_autoload_function() 
+refactorvim#renaming#get_current_autoload_function()
 
     Returns the name of the autoload function the cursor is currently in.
 
@@ -159,7 +234,7 @@ refactorvim#renaming#get_current_autoload_function()
     description and the default mapping that is assigned to that function.
 
                                                 *refactorvim#renaming#rename()*
-refactorvim#renaming#rename({source}, {target}) 
+refactorvim#renaming#rename({source}, {target})
 
     Renames an autoload function or namespace including necessary renaming and
     copying of files due to changed namespaces.
@@ -169,6 +244,30 @@ refactorvim#renaming#rename({source}, {target})
 
     See |:RefactorvimRename| for a detailled description of the provided
     functionality.
+
+                                     *refactorvim#renaming#toggle_visibility()*
+refactorvim#renaming#toggle_visibility({function_name})
+
+    Toggle the visibility of the specified function between script-local and
+    autoloaded.
+
+    This function is by default provided via the
+    |:RefactorvimToggleVisibility| command and the
+    |<Plug>(RefactorvimToggleVisibility)| mapping.
+
+    See |:RefactorvimToggleVisibility| for a detailed description of the
+    provided functionality.
+
+                                         *refactorvim#motions#goto_definition*
+refactorvim#motions#goto_definition()
+    Jump to the definition of the function or variable under the cursor.
+
+    This function is by default provided via the
+    |<Plug>(RefactorvimGotoDefinition)| mapping.
+
+    See |<Plug>(RefactorvimGotoDefinition)| for a detailed description of
+    the provided functionality.
+
 
 ===============================================================================
 COMPLEMENTARY PLUGINS                                   *complementary-plugins*
@@ -193,6 +292,11 @@ WolfgangMehner/vim-support
 
 ===============================================================================
 CHANGELOG                                                           *changelog*
+
+    0.3.0 .................................................... 2021-08-21
+
+        - Provide command and mapping to toggle visibility
+        - Provide mapping to go to definition
 
     0.2.0 .................................................... 2019-11-18
 
